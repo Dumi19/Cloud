@@ -5,6 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FirebaseAdmin" Version="2.3.0" />
+    <PackageReference Include="FireSharp" Version="2.0.4" />
+    <PackageReference Include="FireSharp.Serialization.JsonNet" Version="1.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.17" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.17" PrivateAssets="all" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />

@@ -1,11 +1,14 @@
 ﻿using Cloud.Models.Domain;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-
+using FireSharp.Config;
+using FireSharp.Interfaces;
+using FirebaseAdmin.Auth;
 public interface IDataLayer
 {
     Task<IList<Movies>> AllItems();
@@ -15,6 +18,7 @@ public interface IDataLayer
     //Task<IList<Movies>> UserFavorites();
     Task<Movies> MovieById(int id);
     Task<Casting> ActorByName(string name);
+    Task LogIn(UserDom user);
 }
 
 
@@ -23,19 +27,31 @@ namespace Cloud.Models.Router
 {
     public class DataLayer : IDataLayer
     {
+        private static string API_KEY = "";
         public static DataLayer instance = null;
         private static readonly object padlock = new object();
-        
 
+        private static FireAuthorization token;
+        private FireSharp.Config.FirebaseConfig config;
+        FireSharp.FirebaseClient dbclient;
+
+        //==== Firebase configuration ===
+        IFirebaseConfig configs = new FireSharp.Config.FirebaseConfig()
+        {
+            AuthSecret = "0KhwicKoxPo43XLJaP5Ye8yLzY13kagROlUbSm6n",
+            BasePath = "https://cloudfire-99e69-default-rtdb.firebaseio.com"
+        };
+
+
+        //================
         HttpClient client = new HttpClient();
         public DataLayer()
         {
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
+            new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Add("User-Agent", ".NET Foundation Repository Reporter");
-
-            
+            dbclient = new FireSharp.FirebaseClient(config);
         }
         public static DataLayer Instance
         {
@@ -131,6 +147,18 @@ namespace Cloud.Models.Router
             string result = await streamTask.Result.Content.ReadAsStringAsync();
             IList<Casting> stars = JsonConvert.DeserializeObject<IList<Casting>>(result);
             return stars[0];
+        }
+        public async Task LogIn(UserDom user)
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(user);
+            HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
+            string uri = " ";
+            var streamTask = client.PostAsync(uri, content);
+            string result = await streamTask.Result.Content.ReadAsStringAsync();
+            var auth = new FirebaseAuth(new FirebaseConfig(API_KEY));
+            token = JsonConvert.DeserializeObject<FireAuthorization>(result);
+            Console.WriteLine(result);
+
         }
     }
 }
