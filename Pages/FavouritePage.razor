@@ -1,0 +1,18 @@
+﻿@page "/favourite"
+@using Models.Domain
+@inject IDataLayer DataLayer
+@inject IJSRuntime jsRuntime
+
+
+<h3>FavouritePage</h3>
+
+@code {
+    private IList<Movies> items
+    { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+       // await DataLayer.Favourite();
+    }
+
+
+}
