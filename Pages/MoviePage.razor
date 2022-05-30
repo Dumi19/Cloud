@@ -1,0 +1,25 @@
+﻿@page "/movie/{id:int}"
+@inject IDataLayer DataLayer
+@using Models.Domain 
+
+<h3>MoviePage</h3>
+<table class="table" border="0" width="500" height="500" cellspacing="0">
+    <tr>
+
+    </tr>
+    <tr>
+        
+    </tr>
+    
+    </table>
+@code {
+    [Parameter]
+    public int id { get; set; }
+    Root item { get; set; }
+
+    protected override void OnInitialized()
+    {
+       // var item = DataLayer.MovieById(id);
+       // item = item.Result;
+    }
+}

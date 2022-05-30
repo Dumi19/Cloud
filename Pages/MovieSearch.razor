@@ -1,0 +1,56 @@
+﻿@page "/search"
+@inject HttpClient Http
+@using System.ComponentModel.DataAnnotations
+@inject IDataLayer DataLayer
+@using Models.Domain
+
+<h1>Weather MUIE</h1>
+
+<input class="border-4 w-1/3 rounded m-6 p-6 h-8 border-blue-300" @bind-value="SearchTerm" @bind-value:event="oninput"
+       placeholder="Search by title (must contain at least 3 letters)" />
+<button type="button" class="btn btn-info" @onclick=SearchForMovie>Search</button>
+
+@if (item == null)
+{
+<p>Nothing to see here</p>
+}
+else
+{ <table class="table" style="width:300px">
+    <tbody>
+
+        @foreach (var element in item.results)
+        {
+    <td width="55%">
+        @element.title
+    </td>
+    }
+    </tbody>
+</table>
+    }
+
+
+@code {
+    [StringLength(30, MinimumLength = 3, ErrorMessage = "Minimum 3 characters")]
+    string SearchTerm { get; set; } = "";
+    Root item { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+
+    async Task SearchForMovie()
+    {
+        try
+        {
+            Root result = await DataLayer.MovieByName(SearchTerm);
+            item = result;
+
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.StackTrace);
+        }
+    }
+}

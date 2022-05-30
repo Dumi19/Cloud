@@ -11,10 +11,10 @@ namespace Cloud.Models.Domain
         public UserDom()
         {
         }
-        public UserDom(string email, string passWord)
+        public UserDom(string email, string password)
         {
             this.email = email;
-            this.password = passWord;
+            this.password = password;
         }
          public string email { get; set; }
 

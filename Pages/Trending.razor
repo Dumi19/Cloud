@@ -1,0 +1,51 @@
+﻿@page "/trending"
+@inject IDataLayer DataLayer
+@using Models.Domain
+<h3>Trending</h3>
+<select class="custom-select" @onchange="Update" title="Select category">
+    
+    <option value="Select" selected disabled="disabled">(Select category)</option>
+    @foreach (var strings in MyStringList)
+    {
+        <option value="@strings"> @strings</option>
+
+    }
+</select>
+@if (items == null)
+{
+    <p>Nothing to see here</p>
+}
+else
+{ <table class="table" style="width:300px">
+        <tbody>
+
+            @foreach (var element in items.results)
+            {
+            <td width="55%">
+                @element.title
+            </td>
+        }
+            </tbody>
+        </table>
+    }
+
+
+@code {
+    protected List<string> MyStringList = new List<string>() { "Top 50 Movies", "Bot 50 Movies", "Most 50 Voted Movies", "Least 50 Voted Movies" };
+
+    protected string MyStringItem { get; set; }
+
+    Root items { get; set; }
+    int selectedValue { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        selectedValue = 1;
+        items = await DataLayer.Trending("top");
+    }
+    private async Task Update(ChangeEventArgs e)
+    {
+       
+    }
+  
+}

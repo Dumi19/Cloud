@@ -1,24 +1,28 @@
 ﻿using Cloud.Models.Domain;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
+using System.Net.Http.Headers;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using FireSharp.Config;
 using FireSharp.Interfaces;
 using FirebaseAdmin.Auth;
+using Firebase.Auth;
+
+
+
 public interface IDataLayer
 {
-    Task<IList<Movies>> AllItems();
-    Task<IList<Movies>> Trending(string place);
-    Task<IList<Movies>> Favourite(string place);
-    Task<IList<Movies>> MovieByName(string name);
-    //Task<IList<Movies>> UserFavorites();
-    Task<Movies> MovieById(int id);
-    Task<Casting> ActorByName(string name);
-    Task LogIn(UserDom user);
+    Task<Root> MovieByName(string name);
+    Task<Root> Trending(string place);
+    Task<Root> ProcessPlace(string place);
+    Task<Root> MovieById(int id);
+    //==========User interaction======
+     Task LogIn(UserDom user);
+     Task SingUp(UserDom user);
+     void LogOut();
 }
 
 
@@ -27,11 +31,12 @@ namespace Cloud.Models.Router
 {
     public class DataLayer : IDataLayer
     {
-        private static string API_KEY = "";
+        private static string API_KEY = "AIzaSyDfnAUyhfSYWIppLrahRhuc-ZtcxTG2lQo";
         public static DataLayer instance = null;
         private static readonly object padlock = new object();
 
         private static FireAuthorization token;
+        private static string projectId;
         private FireSharp.Config.FirebaseConfig config;
         FireSharp.FirebaseClient dbclient;
 
@@ -67,87 +72,49 @@ namespace Cloud.Models.Router
                 }
             }
         }
+        public async Task<Root> MovieById(int id)
+        {
+            var uri = "https://cloud-computing-sep6.ew.r.appspot.com/movies" + id;
+            var streamTask = await client.GetStringAsync(uri);
+            Root recordDetails = JsonSerializer.Deserialize(streamTask.ToString(), typeof(Root)) as Root;
+            return recordDetails;
+        }
+        public async Task<Root> MovieByName(string name)
+        {
+            var uri = "https://cloud-computing-sep6.ew.r.appspot.com/search/movie/page/1/name/" + name;
+            var streamTask = await client.GetStringAsync(uri);
 
-        public async Task<IList<Movies>> AllItems()
-        {
-            string uri = " ";;
-            var streamTask = client.GetAsync(uri);
-            var stream = await streamTask.Result.Content.ReadAsStringAsync();
-            var movies = JsonConvert.DeserializeObject<List<Movies>>(stream);
-            return movies;
-        }
-        public async Task<IList<Movies>> Trending(string place)
-        {
-            string uri = " " + place;
-            var streamTask = client.GetAsync(uri);
-            var stream = await streamTask.Result.Content.ReadAsStringAsync();
-            List<Movies> movies = JsonConvert.DeserializeObject<List<Movies>>(stream);
-            return movies;
-        }
-        public async Task<IList<Movies>> Favourite(string place)
-        {
-            string uri = " " + place;
-            var streamTask = client.GetAsync(uri);
-            var stream = await streamTask.Result.Content.ReadAsStringAsync();
-            List<Movies> movies = JsonConvert.DeserializeObject<List<Movies>>(stream);
-            return movies;
-        }
-        /*
-        public async Task<IList<Movies>> UserFavorites()
-        {
 
-            var result = dbclient.Get(token.localId + "/");
-            Console.WriteLine(result);
-            return null;
-        }
-        */
-
-        public async Task<IList<Movies>> MovieByName(string name)
-        {
-            string jsonString = @"{""name"": """ + name + @"""}";
-            HttpContent content = new StringContent(jsonString, Encoding.UTF8, "application/json");
-            var uri = " ";
-            var streamTask = client.PostAsync(uri, content);
-            string result = await streamTask.Result.Content.ReadAsStringAsync();
-            IList<Movies> moviez = JsonConvert.DeserializeObject<IList<Movies>>(result);
-            return moviez;
-        }
-
-        public async Task<Movies> MovieById(int id)
-        {
-            string uri = "" + id;
-            var streamTask = client.GetAsync(uri);
-            var stream = await streamTask.Result.Content.ReadAsStringAsync();
-            Movies movies = JsonConvert.DeserializeObject<Movies>(stream);
-            uri = "" + movies.title;
-            streamTask = client.GetAsync(uri);
-            stream = await streamTask.Result.Content.ReadAsStringAsync();
-            movies.moviePrint = stream;
-            uri = "" + movies.title;
-            streamTask = client.GetAsync(uri);
-            stream = await streamTask.Result.Content.ReadAsStringAsync();
-            movies.plot = stream;
-            for (int i = 0; i < movies.cast.Count; i++)
+          //  Root recordDetails = JsonSerializer.Deserialize(streamTask.ToString(), typeof(Root)) as Root;
+            Root userCopy = JsonSerializer.Deserialize<Root>(streamTask);
+            /*
+            Console.WriteLine(recordDetails.page);
+            foreach (var item in recordDetails.results)
             {
-                if (!movies.cast[i].getActorName().Equals(""))
-                {
-                    Casting newstar = ActorByName(movies.cast[i].cast_name).Result;
-                    movies.cast[i].avg_movie_rating = newstar.avg_movie_rating;
-                }
+                Console.WriteLine(item.title);
             }
-
-            return movies;
+           */
+            return userCopy;
         }
-        public async Task<Casting> ActorByName(string name)
+        public async Task<Root> Trending(string place)
         {
-            string jsonString = @"{""name"": """ + name + @"""}";
-            HttpContent content = new StringContent(jsonString, Encoding.UTF8, "application/json");
-            string uri = "";
-            var streamTask = client.PostAsync(uri, content);
-            string result = await streamTask.Result.Content.ReadAsStringAsync();
-            IList<Casting> stars = JsonConvert.DeserializeObject<IList<Casting>>(result);
-            return stars[0];
+            var uri = "https://cloud-computing-sep6.ew.r.appspot.com/movies/trending" + place;
+            var streamTask = await client.GetStringAsync(uri);
+            Root recordDetails = JsonSerializer.Deserialize(streamTask.ToString(), typeof(Root)) as Root;
+            return recordDetails;
+
         }
+        public Task<Root> ProcessPlace(string place)
+        {
+            switch (place)
+            {
+                case "Bot 50 Movies": return Trending("bot");
+                //case "Most 50 Voted Movies": return MostVoted("most");
+                case "Least 50 Voted Movies": return Trending("less");
+                default: return Trending("top");
+            }
+        }
+ 
         public async Task LogIn(UserDom user)
         {
             var json = System.Text.Json.JsonSerializer.Serialize(user);
@@ -155,10 +122,25 @@ namespace Cloud.Models.Router
             string uri = " ";
             var streamTask = client.PostAsync(uri, content);
             string result = await streamTask.Result.Content.ReadAsStringAsync();
-            var auth = new FirebaseAuth(new FirebaseConfig(API_KEY));
-            token = JsonConvert.DeserializeObject<FireAuthorization>(result);
+            var auth = new FirebaseAuthProvider(new Firebase.Auth.FirebaseConfig(API_KEY));
+            FireAuthorization token = JsonSerializer.Deserialize(streamTask.ToString(), typeof(FireAuthorization)) as FireAuthorization;
             Console.WriteLine(result);
 
         }
+        
+        public void LogOut()
+        {
+            token = null;
+        }
+        
+        public async Task SingUp(UserDom user)
+        {
+            var auth = new FirebaseAuthProvider(new Firebase.Auth.FirebaseConfig(API_KEY));
+            var a = await auth.CreateUserWithEmailAndPasswordAsync(user.email, user.password);
+            _ = LogIn(user);
+
+        }
+        
+
     }
 }
