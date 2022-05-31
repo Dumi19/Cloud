@@ -10,22 +10,25 @@
        placeholder="Search by title (must contain at least 3 letters)" />
 <button type="button" class="btn btn-info" @onclick=SearchForMovie>Search</button>
 
+    
+
 @if (item == null)
 {
-<p>Nothing to see here</p>
+    <p>Nothing to see here</p>
 }
 else
-{ <table class="table" style="width:300px">
-    <tbody>
-
-        @foreach (var element in item.results)
-        {
-    <td width="55%">
-        <a href=@($"/movie/{element.id}") asp-route-id="@element.id"> @element.title</a>
-    </td>
-    }
-    </tbody>
-</table>
+{ <table class="table" style="width:100px">
+      
+          @foreach (var element in item.results)
+          {
+              <tr>
+                  <td width="55%">
+                      <a href=@($"/movie/{element.id}") asp-route-id="@element.id"> @element.title</a>
+                  </td 
+              </tr>
+          }
+      
+        </table>
     }
 
 

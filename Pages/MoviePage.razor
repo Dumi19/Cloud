@@ -4,7 +4,7 @@
 
 <h3>MoviePage</h3>
 
-@if (item == null)
+@if (item == null || casting == null)
 {
     <span>error</span>
 }
@@ -12,10 +12,22 @@ else
 {
     <table class="table" border="0" width="500" height="500" cellspacing="0">
         <tr>
+           
             @item.original_title
         </tr>
         <tr>
             @item.overview
+        </tr>
+        <h2>Casting list</h2>
+        @foreach (var item in casting)
+        {
+        <tr>
+            @item.name ---> @item.character
+        </tr>
+        }
+        <br />
+        <tr>
+            it has : @item.vote_average ★(@item.vote_count voted)
         </tr>
 
     </table>
@@ -26,11 +38,13 @@ else
     [Parameter]
     public int id { get; set; }
     Result item { get; set; }
-
+    IList<Cast> casting { get; set; }
     protected async override Task OnInitializedAsync()
     {
         var items = await DataLayer.MovieById(id);
         item = items;
+        var cast = await DataLayer.Cast(id);
+        casting = cast;
     }
 
     async Task AddToFavorite()

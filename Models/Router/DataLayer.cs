@@ -18,6 +18,7 @@ public interface IDataLayer
     Task<Root> MovieByName(string name);
     Task<Root> Trending();
     Task<Result> MovieById(int id);
+    Task<IList<Cast>> Cast(int id);
     //==========User interaction======
      Task<bool> LogIn(UserDom user);
      Task AddToFavorites(int movie);
@@ -111,8 +112,13 @@ namespace Cloud.Models.Router
             return recordDetails;
 
         }
-       
- 
+        public async Task<IList<Cast>> Cast(int id)
+        {
+            var uri = "https://cloud-computing-sep6.ew.r.appspot.com/movies/"+id+"/credits";
+            var streamTask = await client.GetStringAsync(uri);
+            Root recordDetail = JsonSerializer.Deserialize(streamTask.ToString(), typeof(Root)) as Root;
+            return recordDetail.cast;
+        }
         public async Task<bool> LogIn(UserDom user)
         {
             Console.WriteLine(user.password +"pass") ;
