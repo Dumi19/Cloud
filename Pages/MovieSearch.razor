@@ -21,7 +21,7 @@ else
         @foreach (var element in item.results)
         {
     <td width="55%">
-        @element.title
+        <a href=@($"/movie/{element.id}") asp-route-id="@element.id"> @element.title</a>
     </td>
     }
     </tbody>

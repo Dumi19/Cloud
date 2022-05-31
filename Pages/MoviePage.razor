@@ -1,25 +1,41 @@
 ﻿@page "/movie/{id:int}"
 @inject IDataLayer DataLayer
-@using Models.Domain 
+@using Models.Domain
 
 <h3>MoviePage</h3>
-<table class="table" border="0" width="500" height="500" cellspacing="0">
-    <tr>
 
-    </tr>
-    <tr>
-        
-    </tr>
-    
+@if (item == null)
+{
+    <span>error</span>
+}
+else
+{
+    <table class="table" border="0" width="500" height="500" cellspacing="0">
+        <tr>
+            @item.original_title
+        </tr>
+        <tr>
+            @item.overview
+        </tr>
+
     </table>
+    <button type="button" class="btn btn-info" @onclick=AddToFavorite>AddToFavorite</button>
+}
+
 @code {
     [Parameter]
     public int id { get; set; }
-    Root item { get; set; }
+    Result item { get; set; }
 
-    protected override void OnInitialized()
+    protected async override Task OnInitializedAsync()
     {
-       // var item = DataLayer.MovieById(id);
-       // item = item.Result;
+        var items = await DataLayer.MovieById(id);
+        item = items;
     }
+
+    async Task AddToFavorite()
+    {
+        await DataLayer.AddToFavorites(id);
+    }
+
 }

@@ -10,18 +10,19 @@ using FireSharp.Config;
 using FireSharp.Interfaces;
 using FirebaseAdmin.Auth;
 using Firebase.Auth;
-
-
+using FireSharp.Response;
 
 public interface IDataLayer
 {
+    string Tokent();
     Task<Root> MovieByName(string name);
-    Task<Root> Trending(string place);
-    Task<Root> ProcessPlace(string place);
-    Task<Root> MovieById(int id);
+    Task<Root> Trending();
+    Task<Result> MovieById(int id);
     //==========User interaction======
-     Task LogIn(UserDom user);
+     Task<bool> LogIn(UserDom user);
+     Task AddToFavorites(int movie);
      Task SingUp(UserDom user);
+     Task<IList<Result>> AllUserFavorites();
      void LogOut();
 }
 
@@ -35,7 +36,13 @@ namespace Cloud.Models.Router
         public static DataLayer instance = null;
         private static readonly object padlock = new object();
 
-        private static FireAuthorization token;
+        public static string token { get; set; }
+        public static string token1 { get; set; }
+
+        public string Tokent()
+        {
+            return token;
+        }
         private static string projectId;
         private FireSharp.Config.FirebaseConfig config;
         FireSharp.FirebaseClient dbclient;
@@ -44,7 +51,7 @@ namespace Cloud.Models.Router
         IFirebaseConfig configs = new FireSharp.Config.FirebaseConfig()
         {
             AuthSecret = "0KhwicKoxPo43XLJaP5Ye8yLzY13kagROlUbSm6n",
-            BasePath = "https://cloudfire-99e69-default-rtdb.firebaseio.com"
+            BasePath = "https://cloudfire-99e69-default-rtdb.firebaseio.com/"
         };
 
 
@@ -56,7 +63,7 @@ namespace Cloud.Models.Router
             client.DefaultRequestHeaders.Accept.Add(
             new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Add("User-Agent", ".NET Foundation Repository Reporter");
-            dbclient = new FireSharp.FirebaseClient(config);
+            dbclient = new FireSharp.FirebaseClient(configs);
         }
         public static DataLayer Instance
         {
@@ -72,11 +79,11 @@ namespace Cloud.Models.Router
                 }
             }
         }
-        public async Task<Root> MovieById(int id)
+        public async Task<Result> MovieById(int id)
         {
-            var uri = "https://cloud-computing-sep6.ew.r.appspot.com/movies" + id;
+            var uri = "https://cloud-computing-sep6.ew.r.appspot.com/movies/" + id;
             var streamTask = await client.GetStringAsync(uri);
-            Root recordDetails = JsonSerializer.Deserialize(streamTask.ToString(), typeof(Root)) as Root;
+            Result recordDetails = JsonSerializer.Deserialize(streamTask.ToString(), typeof(Result)) as Result;
             return recordDetails;
         }
         public async Task<Root> MovieByName(string name)
@@ -96,36 +103,37 @@ namespace Cloud.Models.Router
            */
             return userCopy;
         }
-        public async Task<Root> Trending(string place)
+        public async Task<Root> Trending()
         {
-            var uri = "https://cloud-computing-sep6.ew.r.appspot.com/movies/trending" + place;
+            var uri = "https://cloud-computing-sep6.ew.r.appspot.com/movies/trending";
             var streamTask = await client.GetStringAsync(uri);
             Root recordDetails = JsonSerializer.Deserialize(streamTask.ToString(), typeof(Root)) as Root;
             return recordDetails;
 
         }
-        public Task<Root> ProcessPlace(string place)
-        {
-            switch (place)
-            {
-                case "Bot 50 Movies": return Trending("bot");
-                //case "Most 50 Voted Movies": return MostVoted("most");
-                case "Least 50 Voted Movies": return Trending("less");
-                default: return Trending("top");
-            }
-        }
+       
  
-        public async Task LogIn(UserDom user)
+        public async Task<bool> LogIn(UserDom user)
         {
-            var json = System.Text.Json.JsonSerializer.Serialize(user);
-            HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
-            string uri = " ";
-            var streamTask = client.PostAsync(uri, content);
-            string result = await streamTask.Result.Content.ReadAsStringAsync();
-            var auth = new FirebaseAuthProvider(new Firebase.Auth.FirebaseConfig(API_KEY));
-            FireAuthorization token = JsonSerializer.Deserialize(streamTask.ToString(), typeof(FireAuthorization)) as FireAuthorization;
-            Console.WriteLine(result);
-
+            Console.WriteLine(user.password +"pass") ;
+            Console.WriteLine(user.email);
+            try
+            {
+                var auth = new FirebaseAuthProvider(new Firebase.Auth.FirebaseConfig(API_KEY));
+                var lionk = await auth.SignInWithEmailAndPasswordAsync(user.email, user.password);
+                token = lionk.FirebaseToken;
+                token1 = user.email;
+               
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+                throw;
+            }
+            
+            
         }
         
         public void LogOut()
@@ -137,10 +145,41 @@ namespace Cloud.Models.Router
         {
             var auth = new FirebaseAuthProvider(new Firebase.Auth.FirebaseConfig(API_KEY));
             var a = await auth.CreateUserWithEmailAndPasswordAsync(user.email, user.password);
-            _ = LogIn(user);
+            await LogIn(user);
+            
 
         }
-        
+
+
+        public async Task AddToFavorites(int movie)
+        {
+            if (token != null)
+            {
+
+               await dbclient.PushAsync(token1 + "/", movie);
+
+            }
+        }
+
+        public async Task<IList<Result>> AllUserFavorites()
+        {
+
+            var result = dbclient.Get(token + "/");
+            Console.WriteLine(result);
+
+            /*
+            string uri = "https://movies-app-310106.nw.r.appspot.com/api/movies/favorites/";
+            string jsonString = @"{ ""ids"":";
+            IList<int> milbei = new List<int> { 68646, 71562, 68202, 70951 };
+            var json = System.Text.Json.JsonSerializer.Serialize(milbei);
+            jsonString = jsonString + json + "}";
+            HttpContent content = new StringContent(jsonString, Encoding.UTF8, "application/json");
+            var streamTask = client.PostAsync(uri, content);
+            string result = await streamTask.Result.Content.ReadAsStringAsync();
+            */
+            return null;
+        }
+
 
     }
 }
