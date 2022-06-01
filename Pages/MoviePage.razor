@@ -2,7 +2,7 @@
 @inject IDataLayer DataLayer
 @using Models.Domain
 
-<h3>MoviePage</h3>
+<h3>Movie Page</h3>
 
 @if (item == null || casting == null)
 {
@@ -10,27 +10,27 @@
 }
 else
 {
-    <table class="table" border="0" width="500" height="500" cellspacing="0">
-        <tr>
-           
-            @item.original_title
-        </tr>
-        <tr>
-            @item.overview
-        </tr>
-        <h2>Casting list</h2>
-        @foreach (var item in casting)
-        {
-        <tr>
-            @item.name ---> @item.character
-        </tr>
-        }
-        <br />
-        <tr>
-            it has : @item.vote_average ★(@item.vote_count voted)
-        </tr>
+<table class="table" border="0" width="500" height="500" cellspacing="0">
+    <tr>
 
-    </table>
+        @item.original_title
+    </tr>
+    <tr>
+        @item.overview
+    </tr>
+    <tr>
+        it has : @item.vote_average ★(@item.vote_count voted)
+    </tr>
+    <h3>Casting list</h3>
+    @foreach (var item in casting)
+        {
+    <tr>
+        @item.name --->Plasying as: @item.character
+    </tr>
+        }
+    <br />
+
+</table>
     <button type="button" class="btn btn-info" @onclick=AddToFavorite>AddToFavorite</button>
 }
 

@@ -4,7 +4,7 @@
 @inject IDataLayer DataLayer
 @using Models.Domain
 
-<h1>Weather MUIE</h1>
+<h1>Search for a movie title</h1>
 
 <input class="border-4 w-1/3 rounded m-6 p-6 h-8 border-blue-300" @bind-value="SearchTerm" @bind-value:event="oninput"
        placeholder="Search by title (must contain at least 3 letters)" />
@@ -41,7 +41,6 @@ else
     {
 
     }
-
 
     async Task SearchForMovie()
     {
