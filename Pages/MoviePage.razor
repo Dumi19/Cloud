@@ -10,27 +10,39 @@
 }
 else
 {
-<table class="table" border="0" width="500" height="500" cellspacing="0">
-    <tr>
+    <table class="table" border="0" width="500" height="500" cellspacing="0">
+        <tr>
+            @item.original_title
+        </tr>
+        <a href=@($"/movie/{item.id}") asp-route-id="@item.id"> <img class="movie-image" style="width:170px !important" src="http://image.tmdb.org/t/p/w500/@item.poster_path" /></a>
 
-        @item.original_title
-    </tr>
-    <tr>
-        @item.overview
-    </tr>
-    <tr>
-        it has : @item.vote_average ★(@item.vote_count voted)
-    </tr>
-    <h3>Casting list</h3>
-    @foreach (var item in casting)
-        {
-    <tr>
-        @item.name --->Plasying as: @item.character
-    </tr>
-        }
-    <br />
+        <tr>
+            @item.overview
+        </tr>
+        <br />
+        <tr>
+            Current Rating: @item.vote_average ★(@item.vote_count voted)
+        </tr>
+        <br />
+        <h2>Casting list</h2>
+        <table>
+           <th colspan="1">Actor name:</th><th colspan="2">Charachter</th>
+            
+            @foreach (var item in casting)
+            {
+                <tbody>
+                    <tr>
+                        <td>@item.name </td>
+                        <td>@item.character</td>
+                    </tr>
+                    
+                </tbody>
+            }
+            
+        </table>
+        <br />
 
-</table>
+    </table>
     <button type="button" class="btn btn-info" @onclick=AddToFavorite>AddToFavorite</button>
 }
 
